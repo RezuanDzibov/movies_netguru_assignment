@@ -21,6 +21,7 @@ def add_movie(request_body: bytes) -> Serializer:
     )
     imdb_api_response_data = json.loads(imdb_api_response.content)
     movie_data = {k.lower(): v for k, v in imdb_api_response_data.items()}
+    # TODO: #1 move api fetch to a function
     movie_serializer_in = serializers.MovieSerializerIn(data=movie_data)
     movie_serializer_in.is_valid(raise_exception=True)
     movie = Movie.objects.create(**movie_serializer_in.validated_data)
