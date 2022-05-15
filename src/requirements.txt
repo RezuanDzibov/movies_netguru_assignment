@@ -15,6 +15,7 @@ pep8-naming
 pyflakes
 django
 django-rest-framework
-psycopg2
+psycopg2-binary
 python-dotenv
 drf_yasg
+django-extensions
