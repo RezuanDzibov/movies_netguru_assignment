@@ -19,3 +19,8 @@ class MovieSerializerIn(serializers.ModelSerializer):
         model = Movie
         exclude = ["id"]
 
+
+class MovieListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ["id", "title", "year", "genre", "director"]
