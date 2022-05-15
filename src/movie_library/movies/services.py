@@ -11,7 +11,8 @@ from .serializers import MovieSerializerIn, MovieSerializerOut, MovieListSeriali
 URI = Template(f"{settings.IMDB_API}&t=$movie_title&y=$movie_year")
 
 
-def add_movie(request_body: dict) -> Serializer:
+def add_movie(request_body: bytes) -> Serializer:
+    request_body = json.loads(request_body)
     imdb_api_response = requests.get(
         URI.substitute(
             movie_title=request_body.get("title"),
