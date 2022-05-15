@@ -6,7 +6,7 @@ from rest_framework.serializers import Serializer
 
 from config import settings
 from .models import Movie
-from .serializers import MovieSerializerIn, MovieSerializerOut
+from .serializers import MovieSerializerIn, MovieSerializerOut, MovieListSerializer
 
 URI = Template(f"{settings.IMDB_API}&t=$movie_title&y=$movie_year")
 
@@ -25,3 +25,9 @@ def add_movie(request_body: dict) -> Serializer:
     movie = Movie.objects.create(**movie_serializer_in.validated_data)
     movie_serializer_out = MovieSerializerOut(instance=movie)
     return movie_serializer_out
+
+
+def get_movies() -> Serializer:
+    movies = Movie.objects.all()
+    movie_serializer = MovieListSerializer(many=True, instance=movies)
+    return movie_serializer
