@@ -5,8 +5,8 @@ services:
     build: .
     depends_on:
       - db
-    env_file: ./.env
-    command: "python movies/manage.py runserver 0.0.0.0:8000"
+    env_file: ./docker.env
+    command: "python movie_library/manage.py runserver 0.0.0.0:8000"
     expose:
       - 8000
     ports:
