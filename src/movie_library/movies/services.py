@@ -11,24 +11,38 @@ from .models import Movie
 URI = Template(f"{settings.IMDB_API}&t=$movie_title&y=$movie_year")
 
 
-def add_movie(request_body: bytes) -> Serializer:
-    request_body_data = json.loads(request_body)
-    imdb_api_response = requests.get(
-        URI.substitute(
-            movie_title=request_body_data.get("title"),
-            movie_year=request_body_data.get("release_year"),
-        ),
-    )
-    imdb_api_response_data = json.loads(imdb_api_response.content)
-    movie_data = {k.lower(): v for k, v in imdb_api_response_data.items()}
-    movie_serializer_in = serializers.MovieSerializerIn(data=movie_data)
-    movie_serializer_in.is_valid(raise_exception=True)
-    movie = Movie.objects.create(**movie_serializer_in.validated_data)
-    movie_serializer_out = serializers.MovieSerializerOut(instance=movie)
-    return movie_serializer_out
+class AddMovie:
+    def __call__(self, request_body: bytes) -> Serializer:
+        request_body_data = json.loads(request_body)
+        movie_data = self.get_movie_data(request_body_data=request_body_data)
+        movie_serializer = self.create_movie(movie_data=movie_data)
+        return movie_serializer
+
+    def get_movie_data(self, request_body_data: dict) -> dict:
+        imdb_api_response = requests.get(
+            URI.substitute(
+                movie_title=request_body_data.get("title"),
+                movie_year=request_body_data.get("release_year"),
+            ),
+        )
+        imdb_api_response_data = json.loads(imdb_api_response.content)
+        movie_data = {k.lower(): v for k, v in imdb_api_response_data.items()}
+        return movie_data
+
+    def create_movie(self, movie_data: dict) -> Serializer:
+        movie_serializer_in = serializers.MovieSerializerIn(data=movie_data)
+        movie_serializer_in.is_valid(raise_exception=True)
+        movie = Movie.objects.create(**movie_serializer_in.validated_data)
+        movie_serializer_out = serializers.MovieSerializerOut(instance=movie)
+        return movie_serializer_out
 
 
 def get_movies() -> Serializer:
     movies = Movie.objects.all()
     movie_serializer = serializers.MovieListSerializer(many=True, instance=movies)
     return movie_serializer
+
+
+class MovieService:
+    get_all = get_movies
+    add = AddMovie()
