@@ -2,9 +2,10 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import views, request, response, status
 
 from . import serializers
-from .services import MovieService
+from .services import MovieService, CommentService
 
 movie_service = MovieService()
+comment_service = CommentService()
 
 
 class MovieCreate(views.APIView):
@@ -22,3 +23,10 @@ class MovieList(views.APIView):
     def get(self, request: request.Request) -> response.Response:
         movies_serializer = movie_service.get_all()
         return response.Response(data=movies_serializer.data, status=status.HTTP_200_OK)
+
+
+class CommentList(views.APIView):
+    @swagger_auto_schema(responses={200: serializers.CommentListSerializer})
+    def get(self, request: request.HttpRequest) -> response.Response:
+        comment_serializer = comment_service.get_all()
+        return response.Response(data=comment_serializer.data, status=status.HTTP_200_OK)
