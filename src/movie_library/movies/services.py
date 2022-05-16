@@ -6,7 +6,7 @@ from rest_framework.serializers import Serializer
 
 from config import settings
 from . import serializers
-from .models import Movie
+from .models import Comment, Movie
 
 URI = Template(f"{settings.IMDB_API}&t=$movie_title&y=$movie_year")
 
@@ -43,6 +43,16 @@ def get_movies() -> Serializer:
     return movie_serializer
 
 
+def get_comments() -> Serializer:
+    comments = Comment.objects.all()
+    comment_serializer = serializers.CommentListSerializer(many=True, instance=comments)
+    return comment_serializer
+
+
 class MovieService:
-    get_all = get_movies
+    get_all = staticmethod(get_movies)
     add = AddMovie()
+
+
+class CommentService:
+    get_all = staticmethod(get_movies)
