@@ -3,6 +3,7 @@ from django.db import models
 
 class Movie(models.Model):
     title = models.CharField(max_length=255)
+    # TODO: #5 #4 add slug field
     year = models.CharField(max_length=4)
     rated = models.CharField(max_length=15)
     released = models.CharField(max_length=50)
