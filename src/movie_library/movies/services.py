@@ -1,6 +1,6 @@
 import json
-from typing import Optional
 from string import Template
+from typing import Optional
 
 import requests
 from rest_framework.serializers import Serializer
