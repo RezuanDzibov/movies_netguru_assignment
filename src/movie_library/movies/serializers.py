@@ -30,3 +30,15 @@ class CommentListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = "__all__"
+
+
+class CommentCreateInSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ["movie", "text"]
+
+
+class CommentCreateOutSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ["id", "movie", "text"]
