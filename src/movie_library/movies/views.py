@@ -1,3 +1,5 @@
+from typing import Optional
+
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import views, request, response, status
 
@@ -27,6 +29,19 @@ class MovieList(views.APIView):
 
 class CommentList(views.APIView):
     @swagger_auto_schema(responses={200: serializers.CommentListSerializer})
-    def get(self, request: request.HttpRequest) -> response.Response:
-        comment_serializer = comment_service.get_all()
+    def get(self, request: request.HttpRequest, movie_id: Optional[int] = None) -> response.Response:
+        if movie_id:
+            comment_serializer = comment_service.get_all(movie_id=movie_id)
+        else:
+            comment_serializer = comment_service.get_all()
         return response.Response(data=comment_serializer.data, status=status.HTTP_200_OK)
+
+
+class CommentCreate(views.APIView):
+    @swagger_auto_schema(
+        request_body=serializers.CommentCreateInSerializer,
+        responses={201: serializers.CommentCreateOutSerializer()},
+    )
+    def post(self, request: request.HttpRequest) -> response.Response:
+        comment_serializer = comment_service.add(request_body=request.body)
+        return response.Response(data=comment_serializer.data, status=status.HTTP_201_CREATED)

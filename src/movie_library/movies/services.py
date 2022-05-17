@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 from string import Template
 
 import requests
@@ -43,10 +44,22 @@ def get_movies() -> Serializer:
     return movie_serializer
 
 
-def get_comments() -> Serializer:
-    comments = Comment.objects.all()
+def get_comments(movie_id: Optional[int] = None) -> Serializer:
+    if movie_id:
+        comments = Comment.objects.filter(movie__id=movie_id)
+    else:
+        comments = Comment.objects.all()
     comment_serializer = serializers.CommentListSerializer(many=True, instance=comments)
     return comment_serializer
+
+
+def add_comment(request_body: bytes) -> Serializer:
+    comment_data = json.loads(request_body)
+    comment_serializer_in = serializers.CommentCreateInSerializer(data=comment_data)
+    comment_serializer_in.is_valid(raise_exception=True)
+    comment = Comment.objects.create(**comment_serializer_in.validated_data)
+    comment_serializer_out = serializers.CommentCreateOutSerializer(instance=comment)
+    return comment_serializer_out
 
 
 class MovieService:
@@ -55,4 +68,5 @@ class MovieService:
 
 
 class CommentService:
-    get_all = staticmethod(get_movies)
+    get_all = staticmethod(get_comments)
+    add = staticmethod(add_comment)
