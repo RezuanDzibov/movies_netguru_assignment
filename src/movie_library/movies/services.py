@@ -12,7 +12,7 @@ from .models import Comment, Movie
 URI = Template(f"{settings.IMDB_API}&t=$movie_title&y=$movie_year")
 
 
-class AddMovie:
+class _AddMovie:
     def __call__(self, request_body: bytes) -> Serializer:
         request_body_data = json.loads(request_body)
         movie_data = self.get_movie_data(request_body_data=request_body_data)
@@ -38,13 +38,13 @@ class AddMovie:
         return movie_serializer_out
 
 
-def get_movies() -> Serializer:
+def _get_movies() -> Serializer:
     movies = Movie.objects.all()
     movie_serializer = serializers.MovieListSerializer(many=True, instance=movies)
     return movie_serializer
 
 
-def get_comments(movie_id: Optional[int] = None) -> Serializer:
+def _get_comments(movie_id: Optional[int] = None) -> Serializer:
     if movie_id:
         comments = Comment.objects.filter(movie__id=movie_id)
     else:
@@ -53,7 +53,7 @@ def get_comments(movie_id: Optional[int] = None) -> Serializer:
     return comment_serializer
 
 
-def add_comment(request_body: bytes) -> Serializer:
+def _add_comment(request_body: bytes) -> Serializer:
     comment_data = json.loads(request_body)
     comment_serializer_in = serializers.CommentCreateInSerializer(data=comment_data)
     comment_serializer_in.is_valid(raise_exception=True)
@@ -63,10 +63,10 @@ def add_comment(request_body: bytes) -> Serializer:
 
 
 class MovieService:
-    get_all = staticmethod(get_movies)
-    add = AddMovie()
+    get_all = staticmethod(_get_movies)
+    add = _AddMovie()
 
 
 class CommentService:
-    get_all = staticmethod(get_comments)
-    add = staticmethod(add_comment)
+    get_all = staticmethod(_get_comments)
+    add = staticmethod(_add_comment)
