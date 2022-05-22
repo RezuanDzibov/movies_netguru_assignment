@@ -17,13 +17,13 @@ class MovieSerializerOut(serializers.ModelSerializer):
 class MovieSerializerIn(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        exclude = ["id"]
+        exclude = ["id", "slug"]
 
 
 class MovieListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ["id", "title", "year", "genre", "director"]
+        fields = ["id", "title", "slug", "year", "genre", "director"]
 
 
 class CommentListSerializer(serializers.ModelSerializer):
