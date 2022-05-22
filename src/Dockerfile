@@ -49,5 +49,5 @@ RUN chown -R app:app $APP_HOME
 
 USER app
 
-
+RUN chmod +x /home/app/web/entrypoint.sh
 ENTRYPOINT ["/home/app/web/entrypoint.sh"]
