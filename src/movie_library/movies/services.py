@@ -4,6 +4,7 @@ from typing import Optional
 
 import requests
 from rest_framework.serializers import Serializer
+from rest_framework import exceptions
 
 from config import settings
 from . import serializers
@@ -27,6 +28,8 @@ class _AddMovie:
             ),
         )
         imdb_api_response_data = json.loads(imdb_api_response.content)
+        if imdb_api_response_data.get("Error", None):
+            raise exceptions.APIException(detail=imdb_api_response_data.get("Error"))
         movie_data = {k.lower(): v for k, v in imdb_api_response_data.items()}
         return movie_data
 
