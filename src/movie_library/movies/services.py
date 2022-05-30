@@ -1,5 +1,4 @@
 import json
-from abc import ABC, abstractmethod
 from string import Template
 from typing import Optional
 
@@ -63,7 +62,7 @@ def get_comments(movie_id: Optional[int] = None) -> Serializer:
     return comment_serializer
 
 
-def add_comment(request_body: bytes):
+def add_comment(request_body: bytes) -> Serializer:
     comment_serializer_in = serializers.CommentCreateInSerializer(data=request_body)
     comment_serializer_in.is_valid(raise_exception=True)
     comment = Comment.objects.create(**comment_serializer_in.validated_data)
