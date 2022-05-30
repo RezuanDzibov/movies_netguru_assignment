@@ -4,10 +4,14 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import views, request, response, status
 
 from . import serializers
-from .services import MovieService, CommentService
+from . import services
 
-movie_service = MovieService()
-comment_service = CommentService()
+
+class MovieList(views.APIView):
+    @swagger_auto_schema(responses={200: serializers.MovieListSerializer()})
+    def get(self, request: request.Request) -> response.Response:
+        movies_serializer = services.get_movies()
+        return response.Response(data=movies_serializer.data, status=status.HTTP_200_OK)
 
 
 class MovieCreate(views.APIView):
@@ -16,24 +20,17 @@ class MovieCreate(views.APIView):
         responses={201: serializers.MovieSerializerOut()},
     )
     def post(self, request: request.HttpRequest) -> response.Response:
-        movie_serializer = movie_service.add(request_body=request.body)
+        movie_serializer = services.add_movie(request_body=request.body)
         return response.Response(data=movie_serializer.data, status=status.HTTP_201_CREATED)
-
-
-class MovieList(views.APIView):
-    @swagger_auto_schema(responses={200: serializers.MovieListSerializer()})
-    def get(self, request: request.Request) -> response.Response:
-        movies_serializer = movie_service.get_all()
-        return response.Response(data=movies_serializer.data, status=status.HTTP_200_OK)
 
 
 class CommentList(views.APIView):
     @swagger_auto_schema(responses={200: serializers.CommentListSerializer})
     def get(self, request: request.HttpRequest, movie_id: Optional[int] = None) -> response.Response:
         if movie_id:
-            comment_serializer = comment_service.get_all(movie_id=movie_id)
+            comment_serializer = services.get_comments(movie_id=movie_id)
         else:
-            comment_serializer = comment_service.get_all()
+            comment_serializer = services.get_comments()
         return response.Response(data=comment_serializer.data, status=status.HTTP_200_OK)
 
 
@@ -43,5 +40,5 @@ class CommentCreate(views.APIView):
         responses={201: serializers.CommentCreateOutSerializer()},
     )
     def post(self, request: request.HttpRequest) -> response.Response:
-        comment_serializer = comment_service.add(request_body=request.body)
+        comment_serializer = services.add_comment(request_body=request.body)
         return response.Response(data=comment_serializer.data, status=status.HTTP_201_CREATED)

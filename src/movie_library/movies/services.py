@@ -1,4 +1,5 @@
 import json
+from abc import ABC, abstractmethod
 from string import Template
 from typing import Optional
 
@@ -13,18 +14,15 @@ from .models import Comment, Movie
 URI = Template(f"{settings.IMDB_API}&t=$movie_title&y=$movie_year")
 
 
-class _AddMovie:
-    def __call__(self, request_body: bytes) -> Serializer:
-        request_body_data = json.loads(request_body)
-        movie_data = self.get_movie_data(request_body_data=request_body_data)
-        movie_serializer = self.create_movie(movie_data=movie_data)
-        return movie_serializer
+class add_movie:
+    def __init__(self, request_body: bytes) -> None:
+        self.request_body: dict = json.loads(request_body)
 
-    def get_movie_data(self, request_body_data: dict) -> dict:
+    def _fetch_movie_data(self, data_to_fetch: dict) -> dict:
         imdb_api_response = requests.get(
             URI.substitute(
-                movie_title=request_body_data.get("title"),
-                movie_year=request_body_data.get("release_year"),
+                movie_title=data_to_fetch.get("title"),
+                movie_year=data_to_fetch.get("release_year"),
             ),
         )
         imdb_api_response_data = json.loads(imdb_api_response.content)
@@ -33,21 +31,30 @@ class _AddMovie:
         movie_data = {k.lower(): v for k, v in imdb_api_response_data.items()}
         return movie_data
 
-    def create_movie(self, movie_data: dict) -> Serializer:
-        movie_serializer_in = serializers.MovieSerializerIn(data=movie_data)
-        movie_serializer_in.is_valid(raise_exception=True)
-        movie = Movie.objects.create(**movie_serializer_in.validated_data)
+    def _serialize_movie_data(self, movie_data: dict) -> Serializer:
+        serializer = serializers.MovieSerializerIn(data=movie_data)
+        serializer.is_valid(raise_exception=True)
+        return serializer
+
+    def _create_movie(self, movie_serializer: Serializer) -> Serializer:
+        movie = Movie.objects.create(**movie_serializer.validated_data)
         movie_serializer_out = serializers.MovieSerializerOut(instance=movie)
         return movie_serializer_out
 
+    def execute(self) -> Serializer:
+        movie_data = self._fetch_movie_data(data_to_fetch=self.request_body)
+        movie_data = self._serialize_movie_data(movie_data=movie_data)
+        movie_serializer = self._create_movie(movie_serializer=movie_data)
+        return movie_serializer
 
-def _get_movies() -> Serializer:
+
+def get_movies() -> Serializer:
     movies = Movie.objects.all()
     movie_serializer = serializers.MovieListSerializer(many=True, instance=movies)
     return movie_serializer
 
 
-def _get_comments(movie_id: Optional[int] = None) -> Serializer:
+def get_comments(movie_id: Optional[int] = None) -> Serializer:
     if movie_id:
         comments = Comment.objects.filter(movie__id=movie_id)
     else:
@@ -56,20 +63,9 @@ def _get_comments(movie_id: Optional[int] = None) -> Serializer:
     return comment_serializer
 
 
-def _add_comment(request_body: bytes) -> Serializer:
-    comment_data = json.loads(request_body)
-    comment_serializer_in = serializers.CommentCreateInSerializer(data=comment_data)
+def add_comment(request_body: bytes):
+    comment_serializer_in = serializers.CommentCreateInSerializer(data=request_body)
     comment_serializer_in.is_valid(raise_exception=True)
     comment = Comment.objects.create(**comment_serializer_in.validated_data)
     comment_serializer_out = serializers.CommentCreateOutSerializer(instance=comment)
     return comment_serializer_out
-
-
-class MovieService:
-    get_all = staticmethod(_get_movies)
-    add = _AddMovie()
-
-
-class CommentService:
-    get_all = staticmethod(_get_comments)
-    add = staticmethod(_add_comment)
