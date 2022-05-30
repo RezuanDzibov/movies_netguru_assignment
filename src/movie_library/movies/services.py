@@ -1,4 +1,5 @@
 import json
+import re
 from string import Template
 from typing import Optional
 
@@ -17,6 +18,17 @@ class add_movie:
     def __init__(self, request_body: bytes) -> None:
         self.request_body: dict = json.loads(request_body)
 
+    def _normalize_movie_data(self, data: dict) -> dict:
+        movie_data: dict = {}
+        for key, value in data.items():
+            if key.isupper():
+                key = key.lower()
+                movie_data[key] = value
+            else:
+                key = re.sub("(?!^)([A-Z]+)", r"_\1", key).lower()
+                movie_data[key] = value
+        return movie_data
+
     def _fetch_movie_data(self, data_to_fetch: dict) -> dict:
         imdb_api_response = requests.get(
             URI.substitute(
@@ -27,7 +39,7 @@ class add_movie:
         imdb_api_response_data = json.loads(imdb_api_response.content)
         if imdb_api_response_data.get("Error", None):
             raise exceptions.APIException(detail=imdb_api_response_data.get("Error"))
-        movie_data = {k.lower(): v for k, v in imdb_api_response_data.items()}
+        movie_data = self._normalize_movie_data(data=imdb_api_response_data)
         return movie_data
 
     def _serialize_movie_data(self, movie_data: dict) -> Serializer:
