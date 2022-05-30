@@ -20,7 +20,7 @@ class MovieCreate(views.APIView):
         responses={201: serializers.MovieSerializerOut()},
     )
     def post(self, request: request.HttpRequest) -> response.Response:
-        movie_serializer = services.add_movie(request_body=request.body)
+        movie_serializer = services.add_movie(request_body=request.body).execute()
         return response.Response(data=movie_serializer.data, status=status.HTTP_201_CREATED)
 
 
